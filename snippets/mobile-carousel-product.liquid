@@ -1,0 +1,24 @@
+{% comment %}
+  Renders a product item specifically for the mobile carousel.
+
+  Accepts:
+  - product: {Object} Product object
+  - loading: {String} Image loading strategy ('eager' or 'lazy')
+  - class: {String} Additional CSS classes
+
+  Usage:
+  {% render 'mobile-carousel-product', product: product, loading: 'eager' %}
+{% endcomment %}
+
+{%- liquid
+  assign loading = loading | default: 'lazy'
+  assign class = class | default: ''
+
+  # Use the main product item snippet with mobile context
+  render 'megamenu-product-item'
+  product : product,
+  context : 'mobile',
+  loading : loading,
+  sizes : '160px',
+  class : class
+-%}

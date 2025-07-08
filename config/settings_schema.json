@@ -1400,6 +1400,33 @@
     ]
   },
   {
+    "name": "Custom Megamenu",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "megamenu_enable",
+        "label": "Enable Custom Megamenu",
+        "default": true,
+        "info": "Menu items with submenu items will display as enhanced megamenus"
+      },
+      {
+        "type": "collection",
+        "id": "megamenu_collection",
+        "label": "Featured Products Collection (Optional)",
+        "info": "Products from this collection will be featured in megamenus alongside navigation links"
+      },
+      {
+        "type": "range",
+        "id": "mobile_carousel_speed",
+        "label": "Mobile Carousel Auto-scroll Speed (seconds)",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "default": 4
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.cart.name",
     "settings": [
       {

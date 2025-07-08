@@ -1,0 +1,519 @@
+{% comment %}
+  Renders a custom megamenu navigation for the header.
+
+  Features:
+  - Menu items with submenu items get megamenu treatment
+  - Menu items without submenu items render normally
+  - Optional featured products from selected collection
+  - Fully customizable through admin menu structure
+
+  Usage:
+  {% render 'header-custom-megamenu' %}
+{% endcomment %}
+
+{%- liquid
+  # Get the selected collection for optional product display
+  assign megamenu_collection = settings.megamenu_collection
+-%}
+
+<nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          {%- comment -%} Menu item has submenu - render as custom megamenu {%- endcomment -%}
+          <div class="custom-megamenu">
+            <div
+              class="custom-megamenu__trigger"
+              role="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              data-megamenu-trigger="{{ link.handle }}"
+            >
+              <span class="header__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} header__active-menu-item{% endif %}">
+                <span>{{ link.title | escape }}</span>
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </span>
+            </div>
+
+            <div
+              class="custom-megamenu__dropdown"
+              role="menu"
+              aria-label="{{ link.title | escape }} menu"
+              data-megamenu-dropdown="{{ link.handle }}"
+            >
+              {%- comment -%} Navigation Links Section {%- endcomment -%}
+              <div class="custom-megamenu__navigation">
+                <div class="custom-megamenu__nav-grid">
+                  {%- for childlink in link.links -%}
+                    {%- liquid
+                      # Get the object (product, page, collection, etc.) from the link
+                      assign link_object = childlink.object
+                      assign featured_image = null
+                      assign fallback_image = null
+
+                      # Check if it's a product
+                      if link_object.id and link_object.handle and link_object.featured_image
+                        assign fallback_image = link_object.featured_image
+                        # Check for featured image meta object
+                        if link_object.metafields.menu.featured_image
+                          assign featured_image = link_object.metafields.menu.featured_image
+                        endif
+                        # Check if it's a page
+                      elsif link_object.id and link_object.handle and link_object.content
+                        # Check for featured image meta object on page
+                        if link_object.metafields.menu.featured_image
+                          assign featured_image = link_object.metafields.menu.featured_image
+                        endif
+                        # Check if it's a collection
+                      elsif link_object.id and link_object.handle and link_object.products
+                        assign fallback_image = link_object.featured_image
+                        # Check for featured image meta object on collection
+                        if link_object.metafields.menu.featured_image
+                          assign featured_image = link_object.metafields.menu.featured_image
+                        endif
+                      endif
+
+                      # Use featured image if available, otherwise use fallback
+                      assign display_image = featured_image | default: fallback_image
+                    -%}
+
+                    <div class="custom-megamenu__nav-column">
+                      <a
+                        href="{{ childlink.url }}"
+                        class="custom-megamenu__nav-card{% if childlink.current %} custom-megamenu__nav-card--active{% endif %}"
+                        {% if childlink.current %}
+                          aria-current="page"
+                        {% endif %}
+                      >
+                        {%- if display_image -%}
+                          <div class="custom-megamenu__nav-image">
+                            {{-
+                              display_image
+                              | image_url: width: 300
+                              | image_tag:
+                                loading: 'lazy',
+                                alt: childlink.title,
+                                sizes: '200px',
+                                widths: '200, 300, 400'
+                            -}}
+                          </div>
+                        {%- else -%}
+                          <div class="custom-megamenu__nav-image custom-megamenu__nav-image--placeholder">
+                            <div class="custom-megamenu__nav-placeholder">
+                              <svg
+                                width="40"
+                                height="40"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                              >
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21,15 16,10 5,21"></polyline>
+                              </svg>
+                            </div>
+                          </div>
+                        {%- endif -%}
+
+                        <div class="custom-megamenu__nav-content">
+                          <h4 class="custom-megamenu__nav-title">{{ childlink.title | escape }}</h4>
+                          {%- if link_object.content -%}
+                            <p class="custom-megamenu__nav-description">
+                              {{ link_object.content | strip_html | truncate: 60 }}
+                            </p>
+                          {%- elsif link_object.description -%}
+                            <p class="custom-megamenu__nav-description">
+                              {{ link_object.description | strip_html | truncate: 60 }}
+                            </p>
+                          {%- endif -%}
+                        </div>
+                      </a>
+
+                      {%- if childlink.links != blank -%}
+                        <ul class="custom-megamenu__nav-sublist">
+                          {%- for grandchildlink in childlink.links -%}
+                            <li>
+                              <a
+                                href="{{ grandchildlink.url }}"
+                                class="custom-megamenu__nav-sublink{% if grandchildlink.current %} custom-megamenu__nav-sublink--active{% endif %}"
+                                {% if grandchildlink.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                {{ grandchildlink.title | escape }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+                    </div>
+                  {%- endfor -%}
+                </div>
+              </div>
+
+              {%- comment -%} Optional Featured Products Section {%- endcomment -%}
+              {%- if megamenu_collection and megamenu_collection.products.size > 0 -%}
+                <div class="custom-megamenu__products-section">
+                  <div class="custom-megamenu__products-header">
+                    <h3 class="custom-megamenu__products-title">Featured {{ megamenu_collection.title | escape }}</h3>
+                  </div>
+
+                  <div class="custom-megamenu__products-wrapper">
+                    <div class="custom-megamenu__products-scroll">
+                      {%- for product in megamenu_collection.products limit: 8 -%}
+                        {%- render 'megamenu-product-item',
+                          product: product,
+                          context: 'desktop',
+                          loading: 'lazy',
+                          sizes: '160px'
+                        -%}
+                      {%- endfor -%}
+                    </div>
+                  </div>
+
+                  {%- if megamenu_collection.products.size > 8 -%}
+                    <div class="custom-megamenu__products-footer">
+                      <a
+                        href="{{ megamenu_collection.url }}"
+                        class="custom-megamenu__view-all-link"
+                      >
+                        View All {{ megamenu_collection.title | escape }}
+                        {{- 'icon-arrow.svg' | inline_asset_content -}}
+                      </a>
+                    </div>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- else -%}
+          {%- comment -%} Menu item has no submenu - render normally {%- endcomment -%}
+          <a
+            href="{{ link.url }}"
+            class="header__menu-item list-menu__item link link--text focus-inset{% if link.current %} header__active-menu-item{% endif %}"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            <span>{{ link.title | escape }}</span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>
+
+{%- style -%}
+  /* Custom Megamenu Navigation Styles */
+  .custom-megamenu__dropdown {
+    display: flex;
+    gap: 3rem;
+    min-height: 300px;
+  }
+
+  .custom-megamenu__navigation {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .custom-megamenu__nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .custom-megamenu__nav-column {
+    min-width: 0;
+  }
+
+  /* Navigation Card Styles */
+  .custom-megamenu__nav-card {
+    display: block;
+    text-decoration: none;
+    background: rgb(var(--color-background));
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .custom-megamenu__nav-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-color: rgba(var(--color-button), 0.3);
+  }
+
+  .custom-megamenu__nav-card--active {
+    border-color: rgb(var(--color-button));
+    box-shadow: 0 2px 8px rgba(var(--color-button), 0.2);
+  }
+
+  .custom-megamenu__nav-image {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: rgba(var(--color-foreground), 0.05);
+  }
+
+  .custom-megamenu__nav-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .custom-megamenu__nav-card:hover .custom-megamenu__nav-image img {
+    transform: scale(1.05);
+  }
+
+  .custom-megamenu__nav-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--color-foreground), 0.08);
+  }
+
+  .custom-megamenu__nav-placeholder {
+    color: rgba(var(--color-foreground), 0.4);
+    opacity: 0.7;
+  }
+
+  .custom-megamenu__nav-content {
+    padding: 1rem;
+  }
+
+  .custom-megamenu__nav-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+    transition: color 0.2s ease;
+  }
+
+  .custom-megamenu__nav-card:hover .custom-megamenu__nav-title {
+    color: rgb(var(--color-button));
+  }
+
+  .custom-megamenu__nav-description {
+    font-size: 0.85rem;
+    color: rgba(var(--color-foreground), 0.7);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* Sublist Styles */
+  .custom-megamenu__nav-sublist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 0.5rem;
+  }
+
+  .custom-megamenu__nav-sublist li {
+    margin-bottom: 0.25rem;
+  }
+
+  .custom-megamenu__nav-sublink {
+    display: block;
+    color: rgba(var(--color-foreground), 0.7);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .custom-megamenu__nav-sublink:before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: rgba(var(--color-foreground), 0.4);
+  }
+
+  .custom-megamenu__nav-sublink:hover,
+  .custom-megamenu__nav-sublink--active {
+    color: rgb(var(--color-button));
+  }
+
+  /* Products Section */
+  .custom-megamenu__products-section {
+    flex: 0 0 400px;
+    border-left: 1px solid rgba(var(--color-foreground), 0.1);
+    padding-left: 2rem;
+  }
+
+  .custom-megamenu__products-header {
+    margin-bottom: 1rem;
+  }
+
+  .custom-megamenu__products-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: rgb(var(--color-foreground));
+    margin: 0;
+  }
+
+  .custom-megamenu__products-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .custom-megamenu__products-scroll {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .custom-megamenu__products-scroll .custom-megamenu__product-item {
+    width: auto;
+  }
+
+  .custom-megamenu__products-scroll .custom-megamenu__product-image {
+    height: 120px;
+  }
+
+  .custom-megamenu__products-footer {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .custom-megamenu__view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgb(var(--color-button));
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .custom-megamenu__view-all-link:hover {
+    background-color: rgba(var(--color-button), 0.1);
+    transform: translateY(-1px);
+  }
+
+  .custom-megamenu__view-all-link svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  .custom-megamenu__view-all-link:hover svg {
+    transform: translateX(2px);
+  }
+
+  /* Hide products section if no collection selected */
+  .custom-megamenu__dropdown:not(:has(.custom-megamenu__products-section)) .custom-megamenu__navigation {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Responsive adjustments */
+  @media screen and (max-width: 1200px) {
+    .custom-megamenu__products-section {
+      flex: 0 0 300px;
+    }
+
+    .custom-megamenu__products-scroll {
+      grid-template-columns: 1fr;
+    }
+
+    .custom-megamenu__nav-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .custom-megamenu__nav-image {
+      height: 120px;
+    }
+
+    .custom-megamenu__nav-content {
+      padding: 0.75rem;
+    }
+  }
+
+  @media screen and (max-width: 990px) {
+    .custom-megamenu__dropdown {
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .custom-megamenu__products-section {
+      flex: none;
+      border-left: none;
+      border-top: 1px solid rgba(var(--color-foreground), 0.1);
+      padding-left: 0;
+      padding-top: 2rem;
+    }
+
+    .custom-megamenu__products-scroll {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .custom-megamenu__nav-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .custom-megamenu__nav-image {
+      height: 100px;
+    }
+
+    .custom-megamenu__nav-content {
+      padding: 0.75rem;
+    }
+
+    .custom-megamenu__nav-title {
+      font-size: 0.9rem;
+    }
+
+    .custom-megamenu__nav-description {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .custom-megamenu__nav-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .custom-megamenu__nav-image {
+      height: 80px;
+    }
+
+    .custom-megamenu__nav-content {
+      padding: 0.5rem;
+    }
+
+    .custom-megamenu__nav-title {
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .custom-megamenu__nav-description {
+      font-size: 0.75rem;
+    }
+
+    .custom-megamenu__nav-sublist {
+      margin-top: 0.25rem;
+    }
+
+    .custom-megamenu__nav-sublink {
+      font-size: 0.8rem;
+      padding: 0.15rem 0;
+    }
+  }
+{%- endstyle -%}

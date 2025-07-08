@@ -1,0 +1,123 @@
+{% comment %}
+  Renders a product item for the custom megamenu.
+
+  Accepts:
+  - product: {Object} Product object
+  - context: {String} Context where the snippet is used ('desktop' or 'mobile')
+  - loading: {String} Image loading strategy ('eager' or 'lazy')
+  - sizes: {String} Image sizes attribute
+  - class: {String} Additional CSS classes
+
+  Usage:
+  {% render 'megamenu-product-item', product: product, context: 'desktop' %}
+{% endcomment %}
+
+{%- liquid
+  assign context = context | default: 'desktop'
+  assign loading = loading | default: 'lazy'
+  assign sizes = sizes | default: '200px'
+  assign class = class | default: ''
+
+  # Get custom menu image from metafields or fallback to featured image
+  assign menu_image = product.metafields.menu.image
+  if menu_image
+    assign product_image = menu_image
+  else
+    assign product_image = product.featured_image
+  endif
+
+  # Check if NEW badge should be shown
+  assign show_new_badge = product.metafields.menu.show_new_badge
+
+  # Set appropriate CSS classes based on context
+  if context == 'mobile'
+    assign item_class = 'mobile-carousel-item'
+    assign image_class = 'mobile-carousel-item__image'
+    assign name_class = 'mobile-carousel-item__name'
+    assign badge_class = 'mobile-carousel-item__new-badge'
+  else
+    assign item_class = 'custom-megamenu__product-item'
+    assign image_class = 'custom-megamenu__product-image'
+    assign name_class = 'custom-megamenu__product-name'
+    assign badge_class = 'custom-megamenu__new-badge'
+  endif
+
+  # Add custom classes if provided
+  if class != blank
+    assign item_class = item_class | append: ' ' | append: class
+  endif
+
+  # Determine image dimensions based on context
+  if context == 'mobile'
+    assign image_width = 160
+    assign image_height = 140
+  else
+    assign image_width = 200
+    assign image_height = 160
+  endif
+-%}
+
+<div
+  class="{{ item_class }}"
+  data-product-handle="{{ product.handle }}"
+  onclick="handleProductClick('{{ product.handle }}')"
+  tabindex="0"
+  role="link"
+  aria-label="View {{ product.title | escape }} product details"
+>
+  {%- if product_image -%}
+    <img
+      src="{{ product_image | image_url: width: image_width, height: image_height }}"
+      alt="{{ product_image.alt | escape | default: product.title | escape }}"
+      class="{{ image_class }}"
+      width="{{ image_width }}"
+      height="{{ image_height }}"
+      loading="{{ loading }}"
+      sizes="{{ sizes }}"
+      {%- if context == 'desktop' -%}
+        srcset="
+          {{ product_image | image_url: width: image_width }} {{ image_width }}w,
+          {{ product_image | image_url: width: image_width, height: image_height, scale: 2 }} {{ image_width | times: 2 }}w
+        "
+      {%- endif -%}
+    >
+  {%- else -%}
+    <div
+      class="{{ image_class }}"
+      style="background-color: rgba(var(--color-foreground), 0.04); display: flex; align-items: center; justify-content: center;"
+    >
+      <span style="color: rgba(var(--color-foreground), 0.4); font-size: 0.8rem;"> No image </span>
+    </div>
+  {%- endif -%}
+
+  <span class="{{ name_class }}">{{ product.title | escape }}</span>
+
+  {%- if show_new_badge -%}
+    <span class="{{ badge_class }}" aria-label="New product"> NEW! </span>
+  {%- endif -%}
+
+  {%- if context == 'desktop' -%}
+    {%- comment -%} Add price for desktop view {%- endcomment -%}
+    {%- if product.price_varies -%}
+      <span class="custom-megamenu__product-price">
+        {{ 'products.product.price.from_price_html' | t: price: product.price_min | money }}
+      </span>
+    {%- else -%}
+      <span class="custom-megamenu__product-price">
+        {%- if product.compare_at_price > product.price -%}
+          <span class="custom-megamenu__product-price--sale">{{ product.price | money }}</span>
+          <span class="custom-megamenu__product-price--compare">{{ product.compare_at_price | money }}</span>
+        {%- else -%}
+          {{ product.price | money }}
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{%- comment -%}
+  Preload critical product data for faster navigation
+{%- endcomment -%}
+{%- if context == 'desktop' -%}
+  <link rel="prefetch" href="{{ product.url }}">
+{%- endif -%}
