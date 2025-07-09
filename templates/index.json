@@ -15,8 +15,8 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Image banner",
-            "heading_size": "h0"
+            "heading": "REFRÉSCATE DE VERDAD",
+            "heading_size": "hxl"
           }
         },
         "text": {
@@ -44,7 +44,6 @@
         "button"
       ],
       "settings": {
-        "image": "shopify://shop_images/LIMON.jpg",
         "image_overlay_opacity": 0,
         "image_height": "medium",
         "image_behavior": "none",
@@ -66,17 +65,10 @@
             "heading": "Talk about your brand",
             "heading_size": "h1"
           }
-        },
-        "text_jgbXd4": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.</p>"
-          }
         }
       },
       "block_order": [
-        "heading_L6djCX",
-        "text_jgbXd4"
+        "heading_L6djCX"
       ],
       "name": "t:sections.rich-text.presets.name",
       "settings": {
@@ -84,8 +76,8 @@
         "content_alignment": "center",
         "color_scheme": "scheme-2",
         "full_width": true,
-        "padding_top": 40,
-        "padding_bottom": 52
+        "padding_top": 32,
+        "padding_bottom": 32
       }
     },
     "multirow_qq7LhV": {
@@ -94,30 +86,30 @@
         "row_WFRREP": {
           "type": "row",
           "settings": {
-            "caption": "Caption",
+            "caption": "",
             "heading": "Row",
             "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
-            "button_label": "Button label",
+            "button_label": "",
             "button_link": ""
           }
         },
         "row_rafUxB": {
           "type": "row",
           "settings": {
-            "caption": "Caption",
+            "caption": "",
             "heading": "Row",
             "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
-            "button_label": "Button label",
+            "button_label": "",
             "button_link": ""
           }
         },
         "row_RjrJEN": {
           "type": "row",
           "settings": {
-            "caption": "Caption",
+            "caption": "",
             "heading": "Row",
             "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
-            "button_label": "Button label",
+            "button_label": "",
             "button_link": ""
           }
         }
@@ -140,8 +132,8 @@
         "mobile_content_alignment": "left",
         "section_color_scheme": "scheme-2",
         "row_color_scheme": "scheme-2",
-        "padding_top": 36,
-        "padding_bottom": 36
+        "padding_top": 48,
+        "padding_bottom": 48
       }
     },
     "multicolumn": {
@@ -181,7 +173,7 @@
         "column3"
       ],
       "settings": {
-        "title": "Three Pillars",
+        "title": "",
         "heading_size": "h0",
         "image_width": "third",
         "image_ratio": "adapt",
@@ -190,11 +182,11 @@
         "columns_desktop": 3,
         "column_alignment": "center",
         "background_style": "none",
-        "color_scheme": "scheme-2",
+        "color_scheme": "scheme-1",
         "columns_mobile": "1",
         "swipe_on_mobile": false,
-        "padding_top": 72,
-        "padding_bottom": 72
+        "padding_top": 48,
+        "padding_bottom": 48
       }
     },
     "image_banner_HXnmwb": {
