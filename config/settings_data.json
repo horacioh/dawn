@@ -12,18 +12,19 @@
     "logo": "shopify://shop_images/RASPAFRESH_LOGO_080b6e30-66ed-4a8a-85a6-a3ef4b9f4670.png",
     "logo_width": 90,
     "favicon": "shopify://shop_images/RASPAFRESH_FAVICON_014318a7-2c53-4159-94a4-b3871190edf6.png",
-    "type_header_font": "assistant_n4",
+    "type_header_font": "bricolage_grotesque_n7",
     "heading_scale": 100,
-    "type_body_font": "assistant_n4",
+    "type_body_font": "lato_n4",
     "body_scale": 100,
     "page_width": 1200,
     "spacing_sections": 0,
     "spacing_grid_horizontal": 8,
     "spacing_grid_vertical": 8,
-    "buttons_border_thickness": 1,
+    "animations_hover_elements": "default",
+    "buttons_border_thickness": 2,
     "buttons_border_opacity": 100,
-    "buttons_radius": 0,
-    "buttons_shadow_opacity": 0,
+    "buttons_radius": 40,
+    "buttons_shadow_opacity": 5,
     "buttons_shadow_horizontal_offset": 0,
     "buttons_shadow_vertical_offset": 4,
     "buttons_shadow_blur": 5,
@@ -146,7 +147,7 @@
           "button": "#c0df16",
           "button_label": "#024638",
           "secondary_button_label": "#f6f1e9",
-          "shadow": "#121212"
+          "shadow": "#f6f1e9"
         }
       },
       "scheme-2": {
@@ -164,9 +165,9 @@
         "settings": {
           "background": "#242833",
           "background_gradient": "",
-          "text": "#ffffff",
-          "button": "#ffffff",
-          "button_label": "#000000",
+          "text": "#f6f1e9",
+          "button": "#f6f1e9",
+          "button_label": "#f6f1e9",
           "secondary_button_label": "#ffffff",
           "shadow": "#121212"
         }
