@@ -11,13 +11,96 @@
   "sections": {
     "main": {
       "type": "main-page",
+      "disabled": true,
       "settings": {
         "padding_top": 28,
         "padding_bottom": 28
       }
+    },
+    "recipes-listing": {
+      "type": "recipes-listing",
+      "blocks": {
+        "category-cocktail": {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Cocktail",
+            "category_tag": "cocktail"
+          }
+        },
+        "category-mocktail": {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Mocktail", 
+            "category_tag": "mocktail"
+          }
+        },
+        "category-food": {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Food",
+            "category_tag": "food"
+          }
+        },
+        "flavor-lemon": {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Lemon",
+            "flavor_tag": "lemon"
+          }
+        },
+        "flavor-lime": {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Lime", 
+            "flavor_tag": "lime"
+          }
+        },
+        "flavor-grapefruit": {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Grapefruit",
+            "flavor_tag": "grapefruit"
+          }
+        },
+        "flavor-orange": {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Orange",
+            "flavor_tag": "orange"
+          }
+        }
+      },
+      "block_order": [
+        "category-cocktail",
+        "category-mocktail", 
+        "category-food",
+        "flavor-lemon",
+        "flavor-lime",
+        "flavor-grapefruit",
+        "flavor-orange"
+      ],
+      "settings": {
+        "blog": "recipes",
+        "show_hero": true,
+        "hero_title": "Cocktails & More",
+        "hero_description": "<p>We love a good recipe! Every flavor is delicious on its own but we love experimenting with new ways to let our products shine. Browse our catalog of recipes by sorting by category or flavor from the dropdown menus.</p>",
+        "show_filters": true,
+        "show_flavor_filter": true,
+        "articles_per_page": 12,
+        "image_height": "medium",
+        "image_ratio": "square",
+        "show_excerpt": true,
+        "show_date": false,
+        "show_tags": true,
+        "pagination_type": "load_more",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "recipes-listing"
   ]
 }

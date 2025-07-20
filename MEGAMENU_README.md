@@ -1,33 +1,41 @@
-# Custom Megamenu System - Visual Menu-Driven Implementation
+# Custom Megamenu System - Clean & Minimal Design
 
 ## 🎯 Overview
 
-The custom megamenu system has been updated to be **menu-driven with visual image cards**, giving admin users full control over which menu items get the megamenu treatment through the Shopify admin panel. Navigation items now display as beautiful image cards with featured images.
+The custom megamenu system features a **clean, minimal design inspired by Spindrift's professional aesthetic**. This menu-driven system gives admin users full control over navigation structure while maintaining a sophisticated, organized appearance that prioritizes content and usability.
 
 ## 🔧 How It Works
 
 ### Menu-Based Triggering
-- **Menu items WITH submenu items** → Display as enhanced megamenus with image cards
+- **Menu items WITH submenu items** → Display as clean, organized megamenus
 - **Menu items WITHOUT submenu items** → Display as regular navigation links
 - **Multiple megamenus** → Each menu item with children gets its own megamenu
 - **Admin controlled** → Completely customizable through Navigation settings
-- **Visual navigation** → Navigation items display as image cards with descriptions
+- **Text-focused** → Clean typography prioritizes readability and organization
 
 ### Desktop Megamenu Layout
 ```
-[Menu Item with Submenu] (hover trigger)
-└── Full-Width Megamenu Dropdown (slides down from top)
-    ├── Navigation Section (left) - Image Cards
-    │   ├── [Category 1 Image Card]
-    │   │   ├── Subcategory A
-    │   │   └── Subcategory B
-    │   └── [Category 2 Image Card]
-    │       ├── Subcategory C
-    │       └── Subcategory D
-    └── Featured Products (right, optional)
-        ├── Product 1
-        ├── Product 2
-        └── "View All" link
+┌─────────────────────────────────────────────────────────────┐
+│ [Header/Main Menu - Always Visible]                        │
+│ Home | Shop ← [hover trigger] | About | Contact           │
+└─────────────────────────────────────────────────────────────┘
+       ↓ Clean megamenu expands below header
+┌─────────────────────────────────────────────────────────────┐
+│ Clean Full-Width Megamenu (subtle slide down)              │
+├─────────────────────────────────────────────────────────────┤
+│ Navigation Section (left) - Clean Text Links               │
+│   ├── Category 1                                           │
+│   │   ├── • Subcategory A                                  │
+│   │   └── • Subcategory B                                  │
+│   ├── Category 2                                           │
+│   │   ├── • Subcategory C                                  │
+│   │   └── • Subcategory D                                  │
+│                                                             │
+│ Featured Products (right, optional)                        │
+│   ├── [small img] Product 1 - $29.99                       │
+│   ├── [small img] Product 2 - $19.99                       │
+│   └── "View All" link                                      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Mobile Implementation
@@ -121,14 +129,16 @@ The system supports beautiful image cards for navigation items. Here's how image
 ## 📱 Responsive Behavior
 
 ### Desktop (750px+)
-- **Full-width megamenus** that slide down from the top of the page
-- **Backdrop overlay** prevents interaction with page content
-- **Smooth slide animations** with cubic-bezier easing
-- Hover-triggered megamenus with image cards
-- Side-by-side navigation and products layout
+- **Clean header expansion** - megamenus slide down subtly from below main menu
+- **Main menu remains visible** and interactive at all times
+- **Minimal backdrop overlay** - very subtle dimming without blocking header
+- **Smooth, fast animations** - professional 200ms transitions
+- Clean text-based navigation with organized hierarchy
+- Side-by-side navigation and optional featured products layout
 - Keyboard navigation support and accessibility features
-- Large image cards (140px height) with full descriptions
+- **Typography-focused design** - excellent readability and spacing
 - **Centered layout** with max-width container (1200px)
+- **Scrolling allowed** - users can scroll page while megamenu is open
 
 ### Tablet (750px-990px)
 - Smaller image cards (120px height)
@@ -137,11 +147,13 @@ The system supports beautiful image cards for navigation items. Here's how image
 - Adjusted padding and spacing
 
 ### Mobile (749px and below)
-- Hamburger menu triggers full-screen overlay
-- Product carousel at top
-- Compact image cards (80px height)
-- Touch gestures and auto-scroll
-- Optimized text sizes and spacing
+- **Clean hamburger menu** - triggers professional full-screen overlay
+- **Disabled default drawer** - custom system overrides Shopify's built-in drawer
+- **Minimal product carousel** at top with small, clean product cards
+- **Organized navigation** with clear hierarchy and spacing
+- Touch-friendly interactions with subtle hover states
+- Click outside to close functionality
+- **Optimized typography** and consistent spacing throughout
 
 ## 🎨 Customization Options
 
@@ -188,7 +200,7 @@ assets/
 snippets/
 ├── header-custom-megamenu.liquid   # Menu-driven navigation
 ├── megamenu-product-item.liquid    # Product display component
-└── mobile-carousel-product.liquid  # Mobile carousel wrapper
+└── mobile-carousel-product.liquid  # Mobile carousel product cards
 
 sections/
 └── header.liquid                   # Integration point
@@ -224,10 +236,14 @@ The "Shop" menu item will now display as an enhanced megamenu with:
 
 ### Result:
 ```
-Shop (hover) → Full-width megamenu slides down from top ↓
+Shop (hover) → Header expands downward ↓
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ [Backdrop Overlay with Full-Width Megamenu]                                │
+│ [Header - Always Visible & Interactive]                                    │
+│ Home | Shop ← (hovered) | About | Contact | Search | Cart                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [Full-Width Megamenu - Slides down from header]                            │
 │                                                                             │
 │    ┌─────────────────────────────────────────────────────────────────┐     │
 │    │ [All Products Image]  [Categories Image]  [Sale Image]         │     │
@@ -239,7 +255,12 @@ Shop (hover) → Full-width megamenu slides down from top ↓
 │    │ [Optional: Featured Products carousel on the right] ────────→ │     │
 │    └─────────────────────────────────────────────────────────────────┘     │
 │                                                                             │
-│ [Page content dimmed/blocked by backdrop]                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [Page content - Slightly dimmed but scrollable]                            │
+│ • Header remains interactive                                                │
+│ • Users can scroll while megamenu is open                                  │
+│ • Click outside megamenu to close                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 

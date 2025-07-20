@@ -70,16 +70,54 @@ class CustomMegamenu {
     const mobileOverlay = document.querySelector('.mobile-menu-overlay');
     const closeButton = document.querySelector('.mobile-menu-overlay__close');
 
-    if (!hamburger || !mobileOverlay || !closeButton) return;
+    if (!hamburger || !mobileOverlay || !closeButton) {
+      return;
+    }
 
-    hamburger.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.toggleMobileMenu();
-    });
+    // Find the details element that contains the hamburger
+    const detailsElement = hamburger.closest('details');
+
+    if (detailsElement) {
+      // Completely disable the details element behavior
+      detailsElement.addEventListener('click', (e) => {
+        e.preventDefault();
+      });
+
+      // Handle toggle events
+      detailsElement.addEventListener('toggle', (e) => {
+        e.preventDefault();
+        detailsElement.removeAttribute('open');
+      });
+
+      // Override any existing event listeners
+      hamburger.addEventListener(
+        'click',
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          this.toggleMobileMenu();
+        },
+        true
+      ); // Use capture phase to ensure our handler runs first
+    } else {
+      // Fallback if no details element
+      hamburger.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleMobileMenu();
+      });
+    }
 
     closeButton.addEventListener('click', (e) => {
       e.preventDefault();
       this.closeMobileMenu();
+    });
+
+    // Close menu when clicking outside
+    mobileOverlay.addEventListener('click', (e) => {
+      if (e.target === mobileOverlay) {
+        this.closeMobileMenu();
+      }
     });
   }
 
@@ -182,33 +220,8 @@ class CustomMegamenu {
       observer.observe(mobileOverlay, { attributes: true });
     }
 
-    // Also prevent body scroll when desktop megamenu is open
-    const observeBackdrop = () => {
-      const backdrop = document.querySelector('.custom-megamenu__backdrop');
-      if (backdrop) {
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-              const isActive = backdrop.classList.contains('active');
-              if (isActive) {
-                document.body.style.overflow = 'hidden';
-              } else {
-                // Only restore scroll if mobile menu is not active
-                const mobileOverlay = document.querySelector('.mobile-menu-overlay');
-                if (!mobileOverlay || !mobileOverlay.classList.contains('active')) {
-                  document.body.style.overflow = '';
-                }
-              }
-            }
-          });
-        });
-
-        observer.observe(backdrop, { attributes: true });
-      }
-    };
-
-    // Wait for backdrop to be created, then observe it
-    setTimeout(observeBackdrop, 100);
+    // Note: We don't prevent body scroll for desktop megamenus since they appear below the header
+    // and users should still be able to scroll and interact with the page
   }
 
   showMegamenu(megamenu, trigger, dropdown) {

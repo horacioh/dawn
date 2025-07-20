@@ -1,0 +1,470 @@
+{{ 'section-recipes-listing.css' | asset_url | stylesheet_tag }}
+{{ 'component-article-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-pagination.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign blog_handle = section.settings.blog | default: 'recipes'
+  assign blog = blogs[blog_handle]
+  assign articles_per_page = section.settings.articles_per_page | default: 12
+  assign current_page = request.parameters.page | default: 1 | plus: 0
+  assign show_hero = section.settings.show_hero
+  assign show_filters = section.settings.show_filters
+-%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="recipes-listing section-{{ section.id }}-padding">
+    {%- if show_hero -%}
+      <div class="recipes-hero page-width">
+        <div class="recipes-hero__content{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          {%- if section.settings.hero_title != blank -%}
+            <h1 class="recipes-hero__title {{ section.settings.heading_size }}">
+              {{ section.settings.hero_title }}
+            </h1>
+          {%- endif -%}
+
+          {%- if section.settings.hero_description != blank -%}
+            <div class="recipes-hero__description rte">
+              {{ section.settings.hero_description }}
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.hero_image -%}
+            <div class="recipes-hero__image">
+              {%- assign image_alt = section.settings.hero_image.alt | default: section.settings.hero_title | escape -%}
+              {{
+                section.settings.hero_image
+                | image_url: width: 800
+                | image_tag:
+                  loading: 'lazy',
+                  alt: image_alt,
+                  width: section.settings.hero_image.width,
+                  height: section.settings.hero_image.height
+              }}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if show_filters and blog.articles.size > 0 -%}
+      <div class="recipes-filters page-width">
+        <div class="recipes-filters__wrapper{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          {%- comment -%} Category Filter {%- endcomment -%}
+          <div class="recipes-filters__categories">
+            <button type="button" class="recipes-filter-btn active" data-filter="all">
+              {{ 'sections.recipes.filters.all' | t | default: 'All' }}
+            </button>
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'category_filter' -%}
+                <button
+                  type="button"
+                  class="recipes-filter-btn"
+                  data-filter="{{ block.settings.category_tag | handleize }}"
+                >
+                  {{ block.settings.category_name }}
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- comment -%} Flavor Filter {%- endcomment -%}
+          {%- if section.settings.show_flavor_filter -%}
+            <div class="recipes-filters__flavors">
+              <label for="flavor-filter" class="recipes-filters__label">
+                {{ 'sections.recipes.filters.flavors' | t | default: 'Flavors' }}
+              </label>
+              <select id="flavor-filter" class="recipes-flavor-select">
+                <option value="">{{ 'sections.recipes.filters.all_flavors' | t | default: 'All Flavors' }}</option>
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'flavor_filter' -%}
+                    <option value="{{ block.settings.flavor_tag | handleize }}">
+                      {{ block.settings.flavor_name }}
+                    </option>
+                  {%- endif -%}
+                {%- endfor -%}
+              </select>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="recipes-grid page-width" id="recipes-grid">
+      {%- if blog.articles.size > 0 -%}
+        <div class="recipes-grid__container">
+          {%- paginate blog.articles by articles_per_page -%}
+            {%- for article in blog.articles -%}
+              <div
+                class="recipes-grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                data-recipe-card
+                data-categories="{{ article.tags | join: ',' | handleize }}"
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {%- render 'recipe-card',
+                  article: article,
+                  blog: blog,
+                  show_excerpt: section.settings.show_excerpt,
+                  show_date: section.settings.show_date,
+                  show_tags: section.settings.show_tags,
+                  media_aspect_ratio: section.settings.image_ratio,
+                  media_height: section.settings.image_height
+                -%}
+              </div>
+            {%- endfor -%}
+
+            {%- if paginate.pages > 1 -%}
+              <div class="recipes-pagination">
+                {%- if section.settings.pagination_type == 'load_more' -%}
+                  {%- if paginate.next -%}
+                    <button type="button" class="button recipes-load-more" data-next-url="{{ paginate.next.url }}">
+                      {{ 'sections.recipes.load_more' | t | default: 'Load More Recipes' }}
+                    </button>
+                  {%- endif -%}
+                {%- else -%}
+                  {%- render 'pagination', paginate: paginate -%}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endpaginate -%}
+        </div>
+      {%- else -%}
+        <div class="recipes-empty">
+          <h3>{{ 'sections.recipes.empty.title' | t | default: 'No recipes found' }}</h3>
+          <p>{{ 'sections.recipes.empty.description' | t | default: 'Check back later for delicious recipes!' }}</p>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Load More Loading Spinner {%- endcomment -%}
+    <div class="recipes-loading hidden">
+      {%- render 'loading-spinner' -%}
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'recipes-listing.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Recipes Listing",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog",
+      "info": "Select the blog that contains your recipes"
+    },
+    {
+      "type": "header",
+      "content": "Hero Section"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hero",
+      "default": true,
+      "label": "Show hero section"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "hero_title",
+      "default": "Recipes",
+      "label": "Hero title"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        },
+        {
+          "value": "hxxl",
+          "label": "t:sections.all.heading_size.options__5.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "richtext",
+      "id": "hero_description",
+      "default": "<p>Discover amazing recipes that will inspire your next culinary adventure.</p>",
+      "label": "Hero description"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image"
+    },
+    {
+      "type": "header",
+      "content": "Filters"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "default": true,
+      "label": "Show category filters"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_flavor_filter",
+      "default": true,
+      "label": "Show flavor filter dropdown"
+    },
+    {
+      "type": "header",
+      "content": "Grid Settings"
+    },
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "default": 12,
+      "label": "Recipes per page"
+    },
+    {
+      "type": "select",
+      "id": "image_height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.main-blog.settings.image_height.options__1.label"
+        },
+        {
+          "value": "small",
+          "label": "t:sections.main-blog.settings.image_height.options__2.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.main-blog.settings.image_height.options__3.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.main-blog.settings.image_height.options__4.label"
+        }
+      ],
+      "default": "medium",
+      "label": "Image height"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape"
+        }
+      ],
+      "default": "square",
+      "label": "Image aspect ratio"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "default": true,
+      "label": "Show recipe excerpt"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "default": false,
+      "label": "Show publish date"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "default": true,
+      "label": "Show recipe tags"
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "options": [
+        {
+          "value": "standard",
+          "label": "Standard pagination"
+        },
+        {
+          "value": "load_more",
+          "label": "Load more button"
+        }
+      ],
+      "default": "load_more",
+      "label": "Pagination type"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category_filter",
+      "name": "Category Filter",
+      "settings": [
+        {
+          "type": "text",
+          "id": "category_name",
+          "default": "Cocktail",
+          "label": "Category name"
+        },
+        {
+          "type": "text",
+          "id": "category_tag",
+          "default": "cocktail",
+          "label": "Category tag",
+          "info": "This should match the tag used in your blog articles"
+        }
+      ]
+    },
+    {
+      "type": "flavor_filter",
+      "name": "Flavor Filter",
+      "settings": [
+        {
+          "type": "text",
+          "id": "flavor_name",
+          "default": "Lemon",
+          "label": "Flavor name"
+        },
+        {
+          "type": "text",
+          "id": "flavor_tag",
+          "default": "lemon",
+          "label": "Flavor tag",
+          "info": "This should match the tag used in your blog articles"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recipes Listing",
+      "blocks": [
+        {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Cocktail",
+            "category_tag": "cocktail"
+          }
+        },
+        {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Mocktail",
+            "category_tag": "mocktail"
+          }
+        },
+        {
+          "type": "category_filter",
+          "settings": {
+            "category_name": "Food",
+            "category_tag": "food"
+          }
+        },
+        {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Lemon",
+            "flavor_tag": "lemon"
+          }
+        },
+        {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Lime",
+            "flavor_tag": "lime"
+          }
+        },
+        {
+          "type": "flavor_filter",
+          "settings": {
+            "flavor_name": "Grapefruit",
+            "flavor_tag": "grapefruit"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

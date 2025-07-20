@@ -272,7 +272,18 @@
       "announcement": "Announcement",
       "announcement_bar": "Announcement bar"
     },
-
+    "recipes": {
+      "filters": {
+        "all": "All",
+        "flavors": "Flavors",
+        "all_flavors": "All Flavors"
+      },
+      "load_more": "Load More Recipes",
+      "empty": {
+        "title": "No recipes found",
+        "description": "Check back later for delicious recipes!"
+      }
+    },
     "header": {
       "announcement": "Announcement",
       "menu": "Menu",
