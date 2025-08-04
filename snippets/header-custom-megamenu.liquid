@@ -14,14 +14,38 @@
 {%- liquid
   # Get the selected collection for optional product display
   assign megamenu_collection = settings.megamenu_collection
+  # Get the specific menu item handle that should show featured products
+  assign megamenu_trigger_handle = settings.megamenu_trigger_handle
 -%}
 
 <nav class="header__inline-menu">
   <ul class="list-menu list-menu--inline" role="list">
     {%- for link in section.settings.menu.links -%}
       <li>
-        {%- if link.links != blank -%}
-          {%- comment -%} Menu item has submenu - render as clean megamenu {%- endcomment -%}
+        {%- liquid
+          # Determine if this menu item should show a megamenu
+          assign show_megamenu = false
+
+          # Determine if featured products should show for this menu item
+          assign show_featured_products = false
+          if megamenu_collection and megamenu_collection.products.size > 0
+            if megamenu_trigger_handle == blank or link.handle == megamenu_trigger_handle
+              assign show_featured_products = true
+            endif
+          endif
+
+          # Show megamenu if item has submenu items
+          if link.links != blank
+            assign show_megamenu = true
+          endif
+
+          # Show megamenu if this is the designated trigger item with featured products
+          if megamenu_trigger_handle != blank and link.handle == megamenu_trigger_handle and show_featured_products
+            assign show_megamenu = true
+          endif
+        -%}
+        {%- if show_megamenu -%}
+          {%- comment -%} Menu item has submenu OR is the designated featured products trigger - render as clean megamenu {%- endcomment -%}
           <div class="custom-megamenu">
             <div
               class="custom-megamenu__trigger"
@@ -32,7 +56,9 @@
             >
               <span class="header__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} header__active-menu-item{% endif %}">
                 <span>{{ link.title | escape }}</span>
-                {{- 'icon-caret.svg' | inline_asset_content -}}
+                {%- if link.links != blank -%}
+                  {{- 'icon-caret.svg' | inline_asset_content -}}
+                {%- endif -%}
               </span>
             </div>
 
@@ -42,88 +68,90 @@
               aria-label="{{ link.title | escape }} menu"
               data-megamenu-dropdown="{{ link.handle }}"
             >
-              <div class="custom-megamenu__container page-width">
-                {%- comment -%} Clean Navigation Section {%- endcomment -%}
-                <div class="custom-megamenu__navigation">
-                  <div class="custom-megamenu__nav-grid">
-                    {%- for childlink in link.links -%}
-                      {%- liquid
-                        # Get the object (product, page, collection, etc.) from the link
-                        assign link_object = childlink.object
-                        assign featured_image = null
-                        assign fallback_image = null
+              <div class="custom-megamenu__container page-width{% if link.links == blank and show_featured_products %} custom-megamenu__container--products-only{% endif %}">
+                {%- comment -%} Clean Navigation Section - only show if there are submenu items {%- endcomment -%}
+                {%- if link.links != blank -%}
+                  <div class="custom-megamenu__navigation">
+                    <div class="custom-megamenu__nav-grid">
+                      {%- for childlink in link.links -%}
+                        {%- liquid
+                          # Get the object (product, page, collection, etc.) from the link
+                          assign link_object = childlink.object
+                          assign featured_image = null
+                          assign fallback_image = null
 
-                        # Check if it's a product
-                        if link_object.id and link_object.handle and link_object.featured_image
-                          assign fallback_image = link_object.featured_image
-                          # Check for featured image meta object
-                          if link_object.metafields.menu.featured_image
-                            assign featured_image = link_object.metafields.menu.featured_image
+                          # Check if it's a product
+                          if link_object.id and link_object.handle and link_object.featured_image
+                            assign fallback_image = link_object.featured_image
+                            # Check for featured image meta object
+                            if link_object.metafields.menu.featured_image
+                              assign featured_image = link_object.metafields.menu.featured_image
+                            endif
+                            # Check if it's a page
+                          elsif link_object.id and link_object.handle and link_object.content
+                            # Check for featured image meta object on page
+                            if link_object.metafields.menu.featured_image
+                              assign featured_image = link_object.metafields.menu.featured_image
+                            endif
+                            # Check if it's a collection
+                          elsif link_object.id and link_object.handle and link_object.products
+                            assign fallback_image = link_object.featured_image
+                            # Check for featured image meta object on collection
+                            if link_object.metafields.menu.featured_image
+                              assign featured_image = link_object.metafields.menu.featured_image
+                            endif
                           endif
-                          # Check if it's a page
-                        elsif link_object.id and link_object.handle and link_object.content
-                          # Check for featured image meta object on page
-                          if link_object.metafields.menu.featured_image
-                            assign featured_image = link_object.metafields.menu.featured_image
-                          endif
-                          # Check if it's a collection
-                        elsif link_object.id and link_object.handle and link_object.products
-                          assign fallback_image = link_object.featured_image
-                          # Check for featured image meta object on collection
-                          if link_object.metafields.menu.featured_image
-                            assign featured_image = link_object.metafields.menu.featured_image
-                          endif
-                        endif
 
-                        # Use featured image if available, otherwise use fallback
-                        assign display_image = featured_image | default: fallback_image
-                      -%}
+                          # Use featured image if available, otherwise use fallback
+                          assign display_image = featured_image | default: fallback_image
+                        -%}
 
-                      <div class="custom-megamenu__nav-column">
-                        <a
-                          href="{{ childlink.url }}"
-                          class="custom-megamenu__nav-link{% if childlink.current %} custom-megamenu__nav-link--active{% endif %}"
-                          {% if childlink.current %}
-                            aria-current="page"
-                          {% endif %}
-                        >
-                          {%- if display_image -%}
-                            <img
-                              src="{{ display_image | image_url: width: 120 }}"
-                              alt="{{ childlink.title | escape }}"
-                              class="custom-megamenu__nav-image"
-                              loading="lazy"
-                              width="120"
-                              height="80"
-                            >
+                        <div class="custom-megamenu__nav-column">
+                          <a
+                            href="{{ childlink.url }}"
+                            class="custom-megamenu__nav-link{% if childlink.current %} custom-megamenu__nav-link--active{% endif %}"
+                            {% if childlink.current %}
+                              aria-current="page"
+                            {% endif %}
+                          >
+                            {%- if display_image -%}
+                              <img
+                                src="{{ display_image | image_url: width: 200 }}"
+                                alt="{{ childlink.title | escape }}"
+                                class="custom-megamenu__nav-image"
+                                loading="lazy"
+                                width="80"
+                                height="80"
+                              >
+                            {%- endif -%}
+                            <span class="custom-megamenu__nav-title">{{ childlink.title | escape }}</span>
+                          </a>
+
+                          {%- if childlink.links != blank -%}
+                            <ul class="custom-megamenu__nav-sublist">
+                              {%- for grandchildlink in childlink.links -%}
+                                <li>
+                                  <a
+                                    href="{{ grandchildlink.url }}"
+                                    class="custom-megamenu__nav-sublink{% if grandchildlink.current %} custom-megamenu__nav-sublink--active{% endif %}"
+                                    {% if grandchildlink.current %}
+                                      aria-current="page"
+                                    {% endif %}
+                                  >
+                                    {{ grandchildlink.title | escape }}
+                                  </a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
                           {%- endif -%}
-                          <span class="custom-megamenu__nav-title">{{ childlink.title | escape }}</span>
-                        </a>
-
-                        {%- if childlink.links != blank -%}
-                          <ul class="custom-megamenu__nav-sublist">
-                            {%- for grandchildlink in childlink.links -%}
-                              <li>
-                                <a
-                                  href="{{ grandchildlink.url }}"
-                                  class="custom-megamenu__nav-sublink{% if grandchildlink.current %} custom-megamenu__nav-sublink--active{% endif %}"
-                                  {% if grandchildlink.current %}
-                                    aria-current="page"
-                                  {% endif %}
-                                >
-                                  {{ grandchildlink.title | escape }}
-                                </a>
-                              </li>
-                            {%- endfor -%}
-                          </ul>
-                        {%- endif -%}
-                      </div>
-                    {%- endfor -%}
+                        </div>
+                      {%- endfor -%}
+                    </div>
                   </div>
-                </div>
+                {%- endif -%}
 
                 {%- comment -%} Optional Featured Products Section {%- endcomment -%}
-                {%- if megamenu_collection and megamenu_collection.products.size > 0 -%}
+                {%- if show_featured_products -%}
                   <div class="custom-megamenu__featured">
                     <h4 class="custom-megamenu__featured-title">Featured Products</h4>
                     <div class="custom-megamenu__featured-grid">
@@ -276,6 +304,34 @@
     padding-left: 2rem;
   }
 
+  /* When there's no navigation section, center the featured products */
+  .custom-megamenu__container--products-only .custom-megamenu__featured {
+    flex: 1;
+    border-left: none;
+    padding-left: 0;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .custom-megamenu__container--products-only .custom-megamenu__featured-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Fallback for browsers that support :has() */
+  .custom-megamenu__container:not(:has(.custom-megamenu__navigation)) .custom-megamenu__featured {
+    flex: 1;
+    border-left: none;
+    padding-left: 0;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .custom-megamenu__container:not(:has(.custom-megamenu__navigation)) .custom-megamenu__featured-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
   .custom-megamenu__featured-title {
     font-size: 1.1rem;
     font-weight: bold;
@@ -411,7 +467,7 @@
     }
 
     .custom-megamenu__nav-title {
-      font-size: 0.9rem;
+      font-size: 1em;
     }
 
     .custom-megamenu__nav-sublink {
@@ -452,7 +508,7 @@
     }
 
     .custom-megamenu__nav-title {
-      font-size: 0.8rem;
+      font-size: 1em;
     }
 
     .custom-megamenu__nav-sublink {
@@ -471,7 +527,7 @@
     }
 
     .custom-megamenu__nav-title {
-      font-size: 0.75rem;
+      font-size: 1em;
       margin-bottom: 0.25rem;
     }
 

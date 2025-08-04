@@ -48,6 +48,7 @@
   z-index: 999;
   padding: 3rem 2rem;
   margin-top: 0;
+  overflow: hidden;
 }
 
 .custom-megamenu__dropdown.active {
@@ -98,7 +99,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 2.5rem;
   width: 100%;
 }
@@ -128,8 +129,8 @@
 
 /* Simple Navigation Images */
 .custom-megamenu__nav-image {
-  width: 100px;
-  height: 280px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   border-radius: 4px;
   margin-bottom: 0.75rem;
@@ -148,7 +149,7 @@
 
 .custom-megamenu__nav-title {
   display: block;
-  font-size: inherit;
+  font-size: 1em;
   font-weight: inherit;
   margin: 0;
   line-height: 1.4;

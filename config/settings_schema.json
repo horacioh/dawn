@@ -1412,8 +1412,15 @@
       {
         "type": "collection",
         "id": "megamenu_collection",
-        "label": "Featured Products Collection (Optional)",
-        "info": "Products from this collection will be featured in megamenus alongside navigation links"
+        "label": "Featured Products Collection",
+        "info": "Products from this collection will appear in both the desktop megamenu and mobile product carousel"
+      },
+      {
+        "type": "text",
+        "id": "megamenu_trigger_handle",
+        "label": "Menu Item for Featured Products",
+        "info": "Enter the menu item handle (e.g., 'comprar', 'shop') that should show the featured products megamenu. Leave empty to show on any item with submenu items.",
+        "placeholder": "comprar"
       },
       {
         "type": "range",
