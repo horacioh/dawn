@@ -1416,11 +1416,14 @@
         "info": "Products from this collection will appear in both the desktop megamenu and mobile product carousel"
       },
       {
-        "type": "text",
-        "id": "megamenu_trigger_handle",
-        "label": "Menu Item for Featured Products",
-        "info": "Enter the menu item handle (e.g., 'comprar', 'shop') that should show the featured products megamenu. Leave empty to show on any item with submenu items.",
-        "placeholder": "comprar"
+        "type": "range",
+        "id": "megamenu_trigger_position",
+        "label": "Menu Item Position for Featured Products",
+        "info": "Choose which menu item (by position) should show the featured products megamenu. '1' = first item, '2' = second item, etc. Set to '0' to show on any item with submenu items.",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "default": 0
       },
       {
         "type": "range",

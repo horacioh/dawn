@@ -14,8 +14,8 @@
 {%- liquid
   # Get the selected collection for optional product display
   assign megamenu_collection = settings.megamenu_collection
-  # Get the specific menu item handle that should show featured products
-  assign megamenu_trigger_handle = settings.megamenu_trigger_handle
+  # Get the position of menu item that should show featured products (1-based)
+  assign megamenu_trigger_position = settings.megamenu_trigger_position
 -%}
 
 <nav class="header__inline-menu">
@@ -29,7 +29,8 @@
           # Determine if featured products should show for this menu item
           assign show_featured_products = false
           if megamenu_collection and megamenu_collection.products.size > 0
-            if megamenu_trigger_handle == blank or link.handle == megamenu_trigger_handle
+            # Show on specific position, or on any item with submenu if position is 0
+            if megamenu_trigger_position == 0 or forloop.index == megamenu_trigger_position
               assign show_featured_products = true
             endif
           endif
@@ -39,8 +40,8 @@
             assign show_megamenu = true
           endif
 
-          # Show megamenu if this is the designated trigger item with featured products
-          if megamenu_trigger_handle != blank and link.handle == megamenu_trigger_handle and show_featured_products
+          # Show megamenu if this is the designated trigger position with featured products
+          if megamenu_trigger_position > 0 and forloop.index == megamenu_trigger_position and show_featured_products
             assign show_megamenu = true
           endif
         -%}
@@ -156,24 +157,31 @@
                     <h4 class="custom-megamenu__featured-title">Featured Products</h4>
                     <div class="custom-megamenu__featured-grid">
                       {%- for product in megamenu_collection.products limit: 4 -%}
-                        <a href="{{ product.url }}" class="custom-megamenu__featured-item">
-                          <div class="custom-megamenu__featured-image">
-                            {%- if product.featured_media -%}
-                              {{
-                                product.featured_media
-                                | image_url: width: 200
-                                | image_tag: loading: 'lazy', alt: product.title, sizes: '100px', widths: '100, 200'
-                              }}
-                            {%- else -%}
-                              <div class="custom-megamenu__featured-placeholder">
-                                {{ 'image' | placeholder_svg_tag }}
-                              </div>
-                            {%- endif -%}
-                          </div>
-                          <div class="custom-megamenu__featured-info">
-                            <h5 class="custom-megamenu__featured-name">{{ product.title | escape }}</h5>
-                            <span class="custom-megamenu__featured-price">{{ product.price | money }}</span>
-                          </div>
+                        {%- liquid
+                          # Get custom menu image from metafields or fallback to featured image
+                          assign menu_image = product.metafields.menu.featured_image
+                          if menu_image
+                            assign product_image = menu_image
+                          else
+                            assign product_image = product.featured_image
+                          endif
+                        -%}
+                        <a
+                          href="{{ product.url }}"
+                          class="custom-megamenu__featured-item"
+                          aria-label="{{ product.title | escape }}"
+                        >
+                          {%- if product_image -%}
+                            {{
+                              product_image
+                              | image_url: width: 100, height: 100
+                              | image_tag: loading: 'lazy', alt: product.title, sizes: '100px', widths: '100, 200'
+                            }}
+                          {%- else -%}
+                            <div class="custom-megamenu__featured-placeholder">
+                              {{ 'image' | placeholder_svg_tag }}
+                            </div>
+                          {%- endif -%}
                         </a>
                       {%- endfor -%}
                     </div>
@@ -314,8 +322,9 @@
   }
 
   .custom-megamenu__container--products-only .custom-megamenu__featured-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 1.5rem;
+    justify-items: center;
   }
 
   /* Fallback for browsers that support :has() */
@@ -328,8 +337,9 @@
   }
 
   .custom-megamenu__container:not(:has(.custom-megamenu__navigation)) .custom-megamenu__featured-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 1.5rem;
+    justify-items: center;
   }
 
   .custom-megamenu__featured-title {
@@ -341,46 +351,30 @@
 
   .custom-megamenu__featured-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 1rem;
   }
 
   .custom-megamenu__featured-item {
-    display: flex;
-    gap: 1rem;
+    display: block;
+    width: 100px;
+    height: 100px;
     text-decoration: none;
     color: rgb(var(--color-foreground));
-    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border: 1px solid rgba(var(--color-foreground), 0.1);
+    transition: transform 0.2s ease;
   }
 
   .custom-megamenu__featured-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border-color: rgba(var(--color-button), 0.3);
+    transform: scale(1.05);
   }
 
-  .custom-megamenu__featured-image {
-    position: relative;
-    width: 100px; /* Fixed width for featured images */
-    height: 100px; /* Fixed height for featured images */
-    overflow: hidden;
-    background: rgba(var(--color-foreground), 0.05);
-  }
-
-  .custom-megamenu__featured-image img {
+  .custom-megamenu__featured-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-
-  .custom-megamenu__featured-item:hover .custom-megamenu__featured-image img {
-    transform: scale(1.05);
+    display: block;
   }
 
   .custom-megamenu__featured-placeholder {
@@ -388,27 +382,8 @@
     align-items: center;
     justify-content: center;
     background: rgba(var(--color-foreground), 0.08);
-  }
-
-  .custom-megamenu__featured-info {
-    padding: 0.5rem 0.75rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .custom-megamenu__featured-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: rgb(var(--color-foreground));
-    margin: 0 0 0.25rem 0;
-    line-height: 1.3;
-  }
-
-  .custom-megamenu__featured-price {
-    font-size: 0.85rem;
-    color: rgb(var(--color-button));
-    font-weight: 500;
+    width: 100%;
+    height: 100%;
   }
 
   .custom-megamenu__view-all {
@@ -454,7 +429,7 @@
     }
 
     .custom-megamenu__featured-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 
     .custom-megamenu__nav-grid {
@@ -495,7 +470,7 @@
     }
 
     .custom-megamenu__featured-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 
     .custom-megamenu__nav-grid {

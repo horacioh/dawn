@@ -1,5 +1,5 @@
 {% comment %}
-  Renders a compact product card for mobile carousel
+  Renders a clean square product item for mobile carousel
 
   Accepts:
   - product: {Object} Product Liquid object (required)
@@ -11,62 +11,35 @@
 
 {%- if product and product != empty -%}
   {%- liquid
-    assign ratio = 1
-    if product.featured_media
-      assign ratio = product.featured_media.aspect_ratio
-    endif
-    if ratio == 0 or ratio == null
-      assign ratio = 1
+    # Get custom menu image from metafields or fallback to featured image
+    assign menu_image = product.metafields.menu.featured_image
+    if menu_image
+      assign product_image = menu_image
+    else
+      assign product_image = product.featured_image
     endif
   -%}
 
   <div class="mobile-carousel-product">
     <a href="{{ product.url }}" class="mobile-carousel-product__link" aria-label="{{ product.title | escape }}">
-      <div class="mobile-carousel-product__image-wrapper">
-        {%- if product.featured_media -%}
-          {%- assign loading_strategy = loading | default: 'eager' -%}
-          {%- assign image_alt = product.featured_media.alt | default: product.title | escape -%}
-          {{
-            product.featured_media
-            | image_url: width: 300
-            | image_tag:
-              class: 'mobile-carousel-product__image',
-              widths: '150,300',
-              sizes: '150px',
-              alt: image_alt,
-              loading: loading_strategy
-          }}
-        {%- else -%}
-          <div class="mobile-carousel-product__image mobile-carousel-product__image--placeholder">
-            {{ 'image' | placeholder_svg_tag: 'mobile-carousel-product__placeholder-svg' }}
-          </div>
-        {%- endif -%}
-
-        {%- if product.available == false -%}
-          <div class="mobile-carousel-product__badge mobile-carousel-product__badge--sold-out">Sold out</div>
-        {%- elsif product.compare_at_price > product.price -%}
-          <div class="mobile-carousel-product__badge mobile-carousel-product__badge--sale">Sale</div>
-        {%- endif -%}
-      </div>
-
-      <div class="mobile-carousel-product__info">
-        <h3 class="mobile-carousel-product__title">
-          {{ product.title | escape }}
-        </h3>
-
-        <div class="mobile-carousel-product__price">
-          {%- if product.price -%}
-            <span class="mobile-carousel-product__price-regular">
-              {{ product.price | money }}
-            </span>
-            {%- if product.compare_at_price > product.price -%}
-              <span class="mobile-carousel-product__price-compare">
-                {{ product.compare_at_price | money }}
-              </span>
-            {%- endif -%}
-          {%- endif -%}
+      {%- if product_image -%}
+        {%- assign loading_strategy = loading | default: 'lazy' -%}
+        {%- assign image_alt = product_image.alt | default: product.title | escape -%}
+        {{
+          product_image
+          | image_url: width: 200, height: 200
+          | image_tag:
+            class: 'mobile-carousel-product__image',
+            widths: '100,200',
+            sizes: '100px',
+            alt: image_alt,
+            loading: loading_strategy
+        }}
+      {%- else -%}
+        <div class="mobile-carousel-product__image mobile-carousel-product__image--placeholder">
+          {{ 'image' | placeholder_svg_tag: 'mobile-carousel-product__placeholder-svg' }}
         </div>
-      </div>
+      {%- endif -%}
     </a>
   </div>
 {%- endif -%}

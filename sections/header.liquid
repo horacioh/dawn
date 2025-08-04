@@ -350,7 +350,7 @@
     <div class="mobile-menu-overlay__content">
       {%- if megamenu_collection and megamenu_collection.products.size > 0 -%}
         <div class="mobile-carousel-section">
-          <h3 class="mobile-carousel-section__title">{{ megamenu_collection.title | escape }}</h3>
+          {% comment %} <h3 class="mobile-carousel-section__title">{{ megamenu_collection.title | escape }}</h3> {% endcomment %}
 
           <div class="mobile-carousel-wrapper" data-carousel-speed="{{ carousel_speed }}">
             <div class="mobile-carousel-track">
