@@ -17,25 +17,72 @@
         "padding_bottom": 0
       }
     },
-    "recipe-router": {
-      "type": "recipe-router-dynamic",
+    "collage_eC6npG": {
+      "type": "collage",
+      "blocks": {
+        "image_xUMarE": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/LIMON.jpg"
+          }
+        },
+        "product_XQUwpD": {
+          "type": "product",
+          "settings": {
+            "product": "raspafresh-maracuya",
+            "second_image": true
+          }
+        },
+        "collection_WKWT8x": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        }
+      },
+      "block_order": [
+        "image_xUMarE",
+        "product_XQUwpD",
+        "collection_WKWT8x"
+      ],
+      "name": "t:sections.collage.presets.name",
       "settings": {
-        "show_breadcrumbs": true,
+        "heading": "",
         "heading_size": "h1",
-        "show_shoppable_ingredients": true,
-        "show_product_recommendations": true,
-        "show_social_sharing": true,
-        "show_related_recipes": true,
-        "recipes_per_page": 12,
+        "desktop_layout": "left",
+        "mobile_layout": "column",
+        "card_styles": "product-card-wrapper",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "recipes_metaobjects_G4Gpyw": {
+      "type": "recipes-metaobjects",
+      "name": "Recipes (Metaobjects)",
+      "settings": {
+        "show_hero": false,
+        "hero_title": "Recipes & Cocktails",
+        "hero_heading_size": "h1",
+        "hero_description": "<p>Discover delicious recipes crafted with our premium ingredients. From refreshing cocktails to innovative mocktails, find your perfect drink.</p>",
         "show_filters": true,
-        "enable_infinite_scroll": true,
+        "show_category_filters": true,
+        "show_difficulty_filter": true,
+        "show_flavor_filters": true,
+        "show_time_filter": true,
+        "recipes_per_page": 12,
+        "recipes_per_load": 6,
+        "infinite_scroll": true,
+        "show_product_links": true,
+        "color_scheme": "",
         "padding_top": 36,
         "padding_bottom": 36
       }
     }
   },
   "order": [
-    "main", 
-    "recipe-router"
+    "main",
+    "collage_eC6npG",
+    "recipes_metaobjects_G4Gpyw"
   ]
 }
