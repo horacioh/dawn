@@ -260,6 +260,21 @@
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {{ 'custom-fonts.css' | asset_url | stylesheet_tag }}
+
+    {%- comment -%} Recipe system styles {%- endcomment -%}
+    {%- if request.page_type == 'page' and page.handle == 'recetas' -%}
+      {{ 'section-recipes-metaobjects.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if request.page_type == 'page' and page.handle == 'recipe' -%}
+      {{ 'section-recipe-single.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if request.page_type == 'page' and page.template.name == 'recipe-single' -%}
+      {{ 'section-recipe-single.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if request.page_type == 'page' and page.template.name == 'recipe-dynamic' -%}
+      {{ 'section-recipes-metaobjects.css' | asset_url | stylesheet_tag }}
+      {{ 'section-recipe-single.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
     {%- if settings.cart_type == 'drawer' -%}
@@ -390,6 +405,14 @@
 
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+
+    {%- comment -%} Recipe system JavaScript {%- endcomment -%}
+    {%- if request.page_type == 'page' and page.handle == 'recetas' -%}
+      <script src="{{ 'recipes-metaobjects.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
+    {%- if request.page_type == 'page' and page.template.name == 'recipe-dynamic' -%}
+      <script src="{{ 'recipe-router-dynamic.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
   </body>
 </html>

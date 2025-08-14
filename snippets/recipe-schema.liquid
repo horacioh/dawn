@@ -1,0 +1,266 @@
+{% comment %}
+  Recipe Schema Markup for SEO
+
+  Generates JSON-LD structured data for recipes following schema.org Recipe specification
+  This enables rich snippets in search results with cooking times, ratings, images, etc.
+
+  Accepts:
+  - recipe: {Object} Recipe metaobject
+  - ingredients: {Array} Array of recipe ingredient metaobjects
+
+  Usage:
+  {% render 'recipe-schema', recipe: current_recipe, ingredients: recipe_ingredients %}
+{% endcomment %}
+
+{%- if recipe and recipe != empty -%}
+  {%- liquid
+    # Recipe basic data
+    assign recipe_title = recipe.title.value
+    assign recipe_description = recipe.description.value | default: recipe_title
+    assign recipe_image = recipe.featured_image.value
+    assign recipe_slug = recipe.slug.value | default: recipe_title | handleize
+    assign recipe_url = request.origin | append: pages.recipe.url | append: '?recipe=' | append: recipe_slug
+
+    # Timing data
+    assign prep_time = recipe.prep_time.value | default: 0
+    assign cook_time = recipe.cook_time.value | default: 0
+    assign total_time = recipe.total_time.value | default: prep_time | plus: cook_time
+    assign servings = recipe.servings.value | default: 1
+
+    # Recipe metadata
+    assign recipe_type = recipe.recipe_type.value | default: 'Recipe'
+    assign difficulty = recipe.difficulty.value
+    assign recipe_tags = recipe.tags.value
+    assign recipe_notes = recipe.notes.value
+
+    # Instructions - extract from rich text
+    assign instructions_content = recipe.instructions.value | strip_html | strip_newlines
+
+    # Current timestamp for datePublished
+    assign current_date = 'now' | date: '%Y-%m-%dT%H:%M:%S%z'
+
+    # Website/Organization info
+    assign org_name = shop.name
+    assign org_url = request.origin
+  -%}
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Recipe",
+      "name": {{ recipe_title | json }},
+      "description": {{ recipe_description | truncate: 300 | json }},
+      "image": [
+        {%- if recipe_image -%}
+          {{ recipe_image | image_url: width: 1200, height: 630 | json }},
+          {{ recipe_image | image_url: width: 800, height: 600 | json }},
+          {{ recipe_image | image_url: width: 400, height: 400 | json }}
+        {%- else -%}
+          {{ org_url | append: '/assets/recipe-placeholder.jpg' | json }}
+        {%- endif -%}
+      ],
+      "author": {
+        "@type": "Organization",
+        "name": {{ org_name | json }},
+        "url": {{ org_url | json }}
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": {{ org_name | json }},
+        "url": {{ org_url | json }}
+        {%- if shop.brand.logo -%}
+        ,"logo": {
+          "@type": "ImageObject",
+          "url": {{ shop.brand.logo | image_url: width: 600, height: 60 | json }}
+        }
+        {%- endif -%}
+      },
+      "url": {{ recipe_url | json }},
+      "datePublished": {{ current_date | json }},
+      "dateModified": {{ current_date | json }},
+      {%- if prep_time > 0 -%}
+      "prepTime": "PT{{ prep_time }}M",
+      {%- endif -%}
+      {%- if cook_time > 0 -%}
+      "cookTime": "PT{{ cook_time }}M",
+      {%- endif -%}
+      {%- if total_time > 0 -%}
+      "totalTime": "PT{{ total_time }}M",
+      {%- endif -%}
+      "recipeCategory": {{ recipe_type | json }},
+      {%- if difficulty != blank -%}
+      "recipeCuisine": {{ difficulty | json }},
+      {%- endif -%}
+      "recipeYield": "{{ servings }} {{ 'sections.recipe.servings' | t | default: 'servings' }}",
+      {%- if ingredients and ingredients.size > 0 -%}
+      "recipeIngredient": [
+        {%- for ingredient in ingredients -%}
+          {%- liquid
+            assign ingredient_text = ingredient.amount.value | append: ' ' | append: ingredient.name.value
+            if ingredient.notes.value != blank
+              assign ingredient_text = ingredient_text | append: ' (' | append: ingredient.notes.value | append: ')'
+            endif
+          -%}
+          {{ ingredient_text | json }}{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ],
+      {%- endif -%}
+      {%- if instructions_content != blank -%}
+      "recipeInstructions": [
+        {%- liquid
+          # Try to split instructions into steps
+          assign instruction_steps = recipe.instructions.value | split: '<li>' | compact
+          if instruction_steps.size <= 1
+            assign instruction_steps = recipe.instructions.value | split: '</p><p>' | compact
+          endif
+          if instruction_steps.size <= 1
+            assign instruction_steps = recipe.instructions.value | split: '\n' | compact
+          endif
+
+          # Fallback: use entire instruction as single step
+          if instruction_steps.size <= 1
+            assign instruction_steps = recipe.instructions.value | strip_html | split: '.' | compact
+          endif
+        -%}
+        {%- for step in instruction_steps limit: 20 -%}
+          {%- liquid
+            assign clean_step = step | strip_html | strip | replace: '</li>', ''
+            unless clean_step == blank or clean_step.size < 10
+              assign step_number = forloop.index
+            endunless
+          -%}
+          {%- if clean_step != blank and clean_step.size >= 10 -%}
+          {
+            "@type": "HowToStep",
+            "name": "Step {{ step_number }}",
+            "text": {{ clean_step | truncate: 500 | json }},
+            "url": "{{ recipe_url }}#step{{ step_number }}"
+          }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+      ],
+      {%- endif -%}
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      },
+      "nutrition": {
+        "@type": "NutritionInformation",
+        "servingSize": "1 {{ 'sections.recipe.serving' | t | default: 'serving' }}"
+      },
+      {%- if recipe_tags.size > 0 -%}
+      "keywords": {{ recipe_tags | join: ', ' | json }},
+      {%- endif -%}
+      "recipeIngredient": [
+        {%- for ingredient in ingredients -%}
+          {%- liquid
+            assign ingredient_schema = ingredient.amount.value | append: ' ' | append: ingredient.name.value
+            if ingredient.notes.value != blank
+              assign ingredient_schema = ingredient_schema | append: ' (' | append: ingredient.notes.value | append: ')'
+            endif
+          -%}
+          {{ ingredient_schema | json }}{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ],
+      {%- if difficulty != blank -%}
+      "recipeYield": {{ servings | json }},
+      {%- endif -%}
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": {{ recipe_url | json }}
+      },
+      {%- comment -%} Additional properties for enhanced SEO {%- endcomment -%}
+      "video": {
+        "@type": "VideoObject",
+        "name": {{ recipe_title | append: ' - How to Make' | json }},
+        "description": {{ recipe_description | json }},
+        "thumbnailUrl": [
+          {%- if recipe_image -%}
+            {{ recipe_image | image_url: width: 1280, height: 720 | json }}
+          {%- endif -%}
+        ],
+        "contentUrl": {{ recipe_url | json }},
+        "embedUrl": {{ recipe_url | json }},
+        "uploadDate": {{ current_date | json }}
+      },
+      "isBasedOn": {{ recipe_url | json }},
+      "mainEntity": {
+        "@type": "Recipe",
+        "name": {{ recipe_title | json }}
+      }
+      {%- if ingredients.size > 0 -%}
+      ,"mentions": [
+        {%- for ingredient in ingredients -%}
+          {%- if ingredient.product.value -%}
+          {
+            "@type": "Product",
+            "name": {{ ingredient.product.value.title | json }},
+            "url": {{ request.origin | append: ingredient.product.value.url | json }},
+            {%- if ingredient.product.value.featured_image -%}
+            "image": {{ ingredient.product.value.featured_image | image_url: width: 400 | json }},
+            {%- endif -%}
+            "offers": {
+              "@type": "Offer",
+              "price": {{ ingredient.product.value.price | money_without_currency | json }},
+              "priceCurrency": {{ cart.currency.iso_code | json }},
+              "availability": {%- if ingredient.product.value.available -%}"https://schema.org/InStock"{%- else -%}"https://schema.org/OutOfStock"{%- endif -%},
+              "url": {{ request.origin | append: ingredient.product.value.url | json }}
+            }
+          }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+      {%- endif -%}
+    }
+  </script>
+
+  {%- comment -%} Additional meta tags for social sharing {%- endcomment -%}
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ recipe_title | escape }}">
+  <meta property="og:description" content="{{ recipe_description | truncate: 300 | escape }}">
+  <meta property="og:url" content="{{ recipe_url }}">
+  {%- if recipe_image -%}
+    <meta property="og:image" content="{{ recipe_image | image_url: width: 1200, height: 630 }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ recipe_image.alt | default: recipe_title | escape }}">
+  {%- endif -%}
+  <meta property="og:site_name" content="{{ shop.name | escape }}">
+
+  {%- comment -%} Twitter Card meta tags {%- endcomment -%}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ recipe_title | escape }}">
+  <meta name="twitter:description" content="{{ recipe_description | truncate: 200 | escape }}">
+  {%- if recipe_image -%}
+    <meta name="twitter:image" content="{{ recipe_image | image_url: width: 1200, height: 600 }}">
+    <meta name="twitter:image:alt" content="{{ recipe_image.alt | default: recipe_title | escape }}">
+  {%- endif -%}
+
+  {%- comment -%} Pinterest Rich Pins {%- endcomment -%}
+  <meta property="article:author" content="{{ shop.name | escape }}">
+  <meta property="article:published_time" content="{{ current_date }}">
+  {%- if recipe_tags.size > 0 -%}
+    {%- for tag in recipe_tags limit: 5 -%}
+      <meta property="article:tag" content="{{ tag | escape }}">
+    {%- endfor -%}
+  {%- endif -%}
+
+  {%- comment -%} Recipe-specific meta tags {%- endcomment -%}
+  {%- if prep_time > 0 -%}
+    <meta name="recipe:prep_time" content="{{ prep_time }}">
+  {%- endif -%}
+  {%- if cook_time > 0 -%}
+    <meta name="recipe:cook_time" content="{{ cook_time }}">
+  {%- endif -%}
+  {%- if total_time > 0 -%}
+    <meta name="recipe:total_time" content="{{ total_time }}">
+  {%- endif -%}
+  <meta name="recipe:servings" content="{{ servings }}">
+  {%- if recipe_type != blank -%}
+    <meta name="recipe:category" content="{{ recipe_type | escape }}">
+  {%- endif -%}
+  {%- if difficulty != blank -%}
+    <meta name="recipe:difficulty" content="{{ difficulty | escape }}">
+  {%- endif -%}
+{%- endif -%}

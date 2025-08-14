@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin language editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "general": {
     "password_page": {
@@ -314,6 +323,61 @@
       "duties_included_taxes_at_checkout_shipping_at_checkout_without_policy": "Aranceles incluidos. Impuestos, descuentos y envío calculados en la pantalla de pago.",
       "taxes_at_checkout_shipping_at_checkout_with_policy_html": "Impuestos, descuentos y <a href=\"{{ link }}\">envío</a> calculados en la pantalla de pago.",
       "taxes_at_checkout_shipping_at_checkout_without_policy": "Impuestos, descuentos y envío calculados en la pantalla de pago."
+    },
+    "recipes": {
+      "filters": {
+        "all": "Todas",
+        "flavors": "Sabores",
+        "all_flavors": "Todos los Sabores"
+      },
+      "search_placeholder": "Buscar recetas",
+      "filter_all": "Todas",
+      "difficulty": "Dificultad",
+      "all_difficulties": "Todas las Dificultades",
+      "all_categories": "Todas las Categorías",
+      "flavors": "Sabores",
+      "all_flavors": "Todos los Sabores",
+      "prep_time": "Tiempo de Preparación",
+      "any_time": "Cualquier Tiempo",
+      "under_15min": "Menos de 15 min",
+      "15_30min": "15-30 min",
+      "30_60min": "30-60 min",
+      "over_60min": "Más de 60 min",
+      "load_more": "Cargar Más Recetas",
+      "view_recipe": "Ver receta de {{ recipe }}",
+      "featured": "Destacada",
+      "minutes_short": " min",
+      "no_recipes": "No se encontraron recetas",
+      "create_recipes_message": "¡Crea algunas recetas en tu Administrador de Shopify en Contenido > Metaobjetos > Recetas para comenzar!",
+      "no_results": "No se encontraron recetas",
+      "try_different_filters": "¡Intenta ajustar tus filtros o regresa más tarde para nuevas recetas!",
+      "empty": {
+        "title": "No se encontraron recetas",
+        "description": "¡Regresa más tarde para deliciosas recetas!"
+      }
+    },
+    "recipe": {
+      "recipes": "Recetas",
+      "featured": "Receta Destacada",
+      "serves": "Porciones",
+      "prep_time": "Preparación:",
+      "cook_time": "Cocción:",
+      "total_time": "Total:",
+      "minutes_short": " min",
+      "ingredients": "Ingredientes",
+      "instructions": "Instrucciones",
+      "notes": "Notas y Consejos",
+      "share_recipe": "Compartir Receta",
+      "recipe_tags": "Etiquetas de Receta",
+      "more_photos": "Más Fotos",
+      "shop_ingredients": "Comprar los Ingredientes",
+      "shop_ingredient": "Comprar",
+      "related_recipes": "Recetas Relacionadas",
+      "recipe_not_found": "Receta No Encontrada",
+      "recipe_not_found_description": "Lo sentimos, no pudimos encontrar la receta que buscas.",
+      "back_to_recipes": "Regresar a Recetas",
+      "servings": "porciones",
+      "serving": "porción"
     },
     "footer": {
       "payment": "Formas de pago"

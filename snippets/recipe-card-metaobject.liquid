@@ -1,0 +1,123 @@
+{% comment %}
+  Recipe Card for Metaobjects
+
+  Simple design with:
+  - Featured image (square format)
+  - Recipe title
+  - Categories list
+  - Clean, minimal styling to match megamenu/mobile carousel
+
+  Accepts:
+  - recipe: {Object} Recipe metaobject
+  - loading: {String} Image loading strategy (eager/lazy)
+  - index: {Number} Card index for animations
+{% endcomment %}
+
+{%- if recipe and recipe != empty -%}
+  {%- liquid
+    # Generate clean dynamic recipe URL
+    assign recipe_slug = recipe.slug.value | default: recipe.title.value | handleize
+    assign recipe_url = '/pages/recipe/' | append: recipe_slug
+
+    # Get recipe data
+    assign recipe_title = recipe.title.value
+    assign recipe_image = recipe.featured_image.value
+    assign recipe_type = recipe.recipe_type.value
+    assign recipe_difficulty = recipe.difficulty.value
+    assign recipe_tags = recipe.tags.value | default: empty
+    assign prep_time = recipe.prep_time.value | default: 0
+
+    # Build categories list
+    assign categories = ''
+    if recipe_type != blank
+      assign categories = categories | append: recipe_type
+    endif
+    if recipe_difficulty != blank
+      if categories != blank
+        assign categories = categories | append: ', ' | append: recipe_difficulty
+      else
+        assign categories = recipe_difficulty
+      endif
+    endif
+
+    # Loading strategy
+    assign loading_strategy = loading | default: 'lazy'
+    if loading <= 6
+      assign loading_strategy = 'eager'
+    endif
+  -%}
+
+  <div
+    class="recipe-card-metaobject"
+    data-recipe-id="{{ recipe.id }}"
+    data-recipe-type="{{ recipe_type | handleize }}"
+    data-recipe-difficulty="{{ recipe_difficulty | handleize }}"
+    data-recipe-prep-time="{{ prep_time }}"
+    data-recipe-tags="{{ recipe_tags | join: ',' | handleize }}"
+    {% if settings.animations_reveal_on_scroll %}
+      data-cascade
+      style="--animation-order: {{ index | default: 1 }};"
+    {% endif %}
+  >
+    <a
+      href="{{ recipe_url }}"
+      class="recipe-card-metaobject__link"
+      aria-label="{{ 'sections.recipes.view_recipe' | t: recipe: recipe_title | default: 'View recipe for ' | append: recipe_title }}"
+    >
+      <div class="recipe-card-metaobject__image-wrapper">
+        {%- if recipe_image -%}
+          <div class="recipe-card-metaobject__image">
+            {{
+              recipe_image
+              | image_url: width: 400, height: 400
+              | image_tag:
+                class: 'recipe-card-metaobject__img',
+                widths: '200, 300, 400, 500, 600',
+                sizes: '(min-width: 1200px) 300px, (min-width: 750px) calc((100vw - 10rem) / 3), calc((100vw - 3rem) / 2)',
+                alt: recipe_image.alt
+              | default: recipe_title, loading: loading_strategy
+            }}
+          </div>
+        {%- else -%}
+          <div class="recipe-card-metaobject__image recipe-card-metaobject__image--placeholder">
+            {%- render 'icon-with-text', icon: 'serving-dish' -%}
+          </div>
+        {%- endif -%}
+
+        {%- if recipe.featured.value == true -%}
+          <div class="recipe-card-metaobject__badge">
+            <span class="badge badge--featured">{{ 'sections.recipes.featured' | t | default: 'Featured' }}</span>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="recipe-card-metaobject__content">
+        <h3 class="recipe-card-metaobject__title h5">
+          {{ recipe_title | escape }}
+        </h3>
+
+        {%- if categories != blank -%}
+          <div class="recipe-card-metaobject__categories">
+            {%- assign category_list = categories | split: ', ' -%}
+            {%- for category in category_list -%}
+              <span class="recipe-card-metaobject__category">{{ category }}</span>
+              {%- unless forloop.last -%}
+                <span class="recipe-card-metaobject__category-separator"> • </span>
+              {%- endunless -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- if prep_time > 0 -%}
+          <div class="recipe-card-metaobject__meta">
+            <span class="recipe-card-metaobject__time">
+              {%- render 'icon-with-text', icon: 'stopwatch' -%}
+              {{ prep_time -}}
+              {{- 'sections.recipes.minutes_short' | t | default: ' min' }}
+            </span>
+          </div>
+        {%- endif -%}
+      </div>
+    </a>
+  </div>
+{%- endif -%}
